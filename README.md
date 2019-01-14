@@ -27,7 +27,7 @@ false
 
 ## Installation
 
-**Note**: it requires OTP-21.2.1 or later. OTP-21.2 is not good due to [this issue](https://github.com/erlang/otp/pull/2061).
+**Note**: it requires OTP-21.2.1 or later. OTP-21.2 is not good due to a [issue](https://github.com/erlang/otp/pull/2061).
 
 It can be installed by adding `blex` to your list of dependencies in `mix.exs`:
 
@@ -41,7 +41,78 @@ end
 
 ## Documentation
 
-Documentation can be found at [https://hexdocs.pm/blex/Blex.html](https://hexdocs.pm/blex/Blex.html).
+Documentation can be found at [hexdocs.pm/blex/Blex.html](https://hexdocs.pm/blex/Blex.html).
+
+## Benchmarking
+
+Compare to alternative Bloom filter powered by `:array` module,
+
+Blex is faster with read operation:
+
+```
+Operating System: macOS"
+CPU Information: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+Number of Available Cores: 8
+Available memory: 16 GB
+Elixir 1.7.4
+Erlang 21.2.2
+
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 5 s
+memory time: 0 μs
+parallel: 1
+inputs: none specified
+Estimated total run time: 21 s
+
+
+Benchmarking Blex.members?...
+Benchmarking Blex.members? with binary format...
+Benchmarking Bloomex.members?...
+
+Name                                       ips        average  deviation         median         99th %
+Blex.members? with binary format          0.69         1.44 s     ±0.23%         1.44 s         1.44 s
+Blex.members?                             0.63         1.58 s     ±0.61%         1.58 s         1.58 s
+Bloomex.members?                          0.40         2.51 s     ±0.00%         2.51 s         2.51 s
+
+Comparison:
+Blex.members? with binary format          0.69
+Blex.members?                             0.63 - 1.09x slower
+Bloomex.members?                          0.40 - 1.74x slower
+```
+
+Blex is much faster with write operation:
+
+```
+Operating System: macOS"
+CPU Information: Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz
+Number of Available Cores: 8
+Available memory: 16 GB
+Elixir 1.7.4
+Erlang 21.2.2
+
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 10 s
+memory time: 0 μs
+parallel: 1
+inputs: none specified
+Estimated total run time: 24 s
+
+
+Benchmarking Blex.put...
+Benchmarking Bloomex.add...
+
+Name                  ips        average  deviation         median         99th %
+Blex.put             0.44         2.25 s     ±3.98%         2.30 s         2.33 s
+Bloomex.add         0.126         7.91 s     ±0.22%         7.91 s         7.92 s
+
+Comparison:
+Blex.put             0.44
+Bloomex.add         0.126 - 3.51x slower
+```
+
+Above benchmarking script is available at `bench/comparison.exs`.
 
 ## Implementation
 
