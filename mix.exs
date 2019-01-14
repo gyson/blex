@@ -5,9 +5,13 @@ defmodule Blex.MixProject do
     [
       app: :blex,
       version: "0.1.0",
+      description: "A fast Bloom filter with concurrent accessibility, powered by :atomics module",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      package: package(),
+      deps: deps(),
+      name: "Blex",
+      source_url: "https://github.com/gyson/blex"
     ]
   end
 
@@ -27,5 +31,12 @@ defmodule Blex.MixProject do
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0.0-rc.4", only: :dev, runtime: false}
     ]
+  end
+
+  def package do
+    %{
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/gyson/blex"}
+    }
   end
 end
