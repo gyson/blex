@@ -27,6 +27,7 @@ defmodule Blex.MixProject do
     [
       {:bloomex, "~> 1.0", only: :dev},
       {:benchee, "~> 0.13", only: :dev},
+      {:murmur, "~> 1.0", only: [:dev, :test]},
       {:stream_data, "~> 0.4", only: [:dev, :test]},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0.0-rc.4", only: :dev, runtime: false}
