@@ -13,7 +13,7 @@ defmodule BlexTest do
   end
 
   test "serialization" do
-    b = Blex.new(100, 0.02)
+    b = Blex.new(1000, 0.02)
 
     Blex.put(b, "hello")
     Blex.put(b, "world")
@@ -52,8 +52,8 @@ defmodule BlexTest do
   end
 
   test "merge" do
-    b1 = Blex.new(100, 0.05)
-    b2 = Blex.new(100, 0.05)
+    b1 = Blex.new(1000, 0.05)
+    b2 = Blex.new(1000, 0.05)
 
     Blex.put(b1, "hello")
     Blex.put(b2, "world")
@@ -67,8 +67,8 @@ defmodule BlexTest do
   end
 
   test "merge_encode" do
-    b1 = Blex.new(100, 0.05)
-    b2 = Blex.new(100, 0.05)
+    b1 = Blex.new(1000, 0.05)
+    b2 = Blex.new(1000, 0.05)
 
     Blex.put(b1, "hello")
     Blex.put(b2, "world")
@@ -114,5 +114,43 @@ defmodule BlexTest do
 
     estimated_size_via_binary = Blex.estimate_size(Blex.encode(b))
     assert estimated_size == estimated_size_via_binary
+  end
+
+  test "Blex.estimate_capacity" do
+    b = Blex.new(1400, 0.01)
+    cap = Blex.estimate_capacity(b)
+    assert cap > 1350
+    assert cap < 1450
+  end
+
+  test "definitely not in" do
+    b = Blex.new(1_000_000, 0.01)
+
+    for i <- 1..1_000_000, rem(i, 2) == 0 do
+      Blex.put(b, i)
+    end
+
+    for i <- 1..1_000_000, not Blex.member?(b, i) do
+      assert rem(i, 2) == 1
+    end
+  end
+
+  test "may be in" do
+    b = Blex.new(1_000_000, 0.01)
+
+    for i <- 1..1_000_000 do
+      Blex.put(b, i)
+    end
+
+    # 10_000_000
+    result = Enum.reduce(1_000_001..10_000_000, 0, fn i, acc ->
+      if Blex.member?(b, i) do
+        acc + 1
+      else
+        acc
+      end
+    end)
+
+    assert result < 9_000_000 * 0.01
   end
 end

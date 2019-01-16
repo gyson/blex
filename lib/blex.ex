@@ -115,7 +115,7 @@ defmodule Blex do
         b <= 16 -> 201
         b <= 32 -> 202
         b <= 48 -> 203
-        true -> raise ArgumentError, "unsupported size"
+        true -> raise ArgumentError, "unsupported capacity"
       end
 
     create_instance(hash_id, k, b)
@@ -232,7 +232,14 @@ defmodule Blex do
   To create a Bloom filter with custom hash function, 1000 capacity and 1% false positive probability, we can do:
 
       iex> custom_hash_id = 1
-      iex> Blex.register(custom_hash_id, fn i, {item, _, m} = acc -> {:erlang.phash2([item, i], m), acc} end)
+      iex> Blex.register(custom_hash_id, fn
+      ...>   0, {item, b, range} ->
+      ...>     <<h1::size(b), h2::size(b), _::bits>> = <<Murmur.hash_x86_128(item)::128>>
+      ...>     {h1, {range, h1, h2}}
+      ...>
+      ...>   i, {range, h1, h2} = acc ->
+      ...>     {rem(h1 + i * h2, range), acc}
+      ...> end)
       :ok
       iex> b = Blex.new(1000, 0.01, custom_hash_id)
       iex> Blex.put(b, "hello")
@@ -278,12 +285,10 @@ defmodule Blex do
 
   ## Example
 
-      iex> use Bitwise
       iex> custom_hash_id = 1
       iex> Blex.register(custom_hash_id, fn
       ...>   0, {item, b, range} ->
-      ...>     hash = :erlang.phash2(item, 1 <<< 32)
-      ...>     <<h1::size(b), h2::size(b), _::bits>> = <<hash::32>>
+      ...>     <<h1::size(b), h2::size(b), _::bits>> = <<Murmur.hash_x86_128(item)::128>>
       ...>     {h1, {range, h1, h2}}
       ...>
       ...>   i, {range, h1, h2} = acc ->
@@ -606,7 +611,7 @@ defmodule Blex do
     copy_data(rest, a, i - 1)
   end
 
-  defp copy_data(<<>>, _, _), do: :ok
+  defp copy_data(<<>>, _, 0), do: :ok
 
   @doc """
 
