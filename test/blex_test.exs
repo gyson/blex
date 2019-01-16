@@ -142,7 +142,6 @@ defmodule BlexTest do
       Blex.put(b, i)
     end
 
-    # 10_000_000
     result = Enum.reduce(1_000_001..10_000_000, 0, fn i, acc ->
       if Blex.member?(b, i) do
         acc + 1
