@@ -122,7 +122,7 @@ defmodule Blex do
   end
 
   defp compute_optimal_k(false_positive_probability) do
-    -:math.log2(false_positive_probability) |> Float.ceil() |> trunc()
+    -:math.log2(false_positive_probability) |> ceil()
   end
 
   defp compute_optimal_b(n, false_positive_probability, k) do
@@ -133,7 +133,7 @@ defmodule Blex do
     m = 1 / (1 - :math.pow(1 - p, 1 / n))
 
     # grow in power of 2 to make hash coding easier
-    b = :math.log2(m) |> Float.ceil() |> trunc()
+    b = :math.log2(m) |> ceil()
 
     # it needs to be at least 6 bits to fit :atomics 64 bits unsigned integer
     max(b, 6)
