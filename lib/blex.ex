@@ -164,6 +164,8 @@ defmodule Blex do
 
   @range 1 <<< 32
 
+  @spec get_hash_fn(hash_id()) :: hash_function()
+
   # for b <= 16, it requires one :erlang.phash2 call
   defp get_hash_fn(201) do
     fn
@@ -172,7 +174,7 @@ defmodule Blex do
         <<h1::size(b), h2::size(b), _::bits>> = <<hash::32>>
         {h1, {m, h1, h2}}
 
-      i, {m, h1, h2} = acc ->
+      i, {m, h1, h2} = acc when is_integer(h1) and is_integer(h2) ->
         {rem(h1 + i * h2, m), acc}
     end
   end
@@ -184,11 +186,11 @@ defmodule Blex do
         h1 = :erlang.phash2(item, m)
         {h1, {item, m, h1}}
 
-      1, {item, m, h1} ->
+      1, {item, m, h1} when is_integer(h1) ->
         h2 = :erlang.phash2([item], m)
         {rem(h1 + h2, m), {h1, h2, m}}
 
-      i, {h1, h2, m} = acc ->
+      i, {h1, h2, m} = acc when is_integer(h1) and is_integer(h2) ->
         {rem(h1 + i * h2, m), acc}
     end
   end
@@ -207,7 +209,7 @@ defmodule Blex do
         <<h1::size(b), h2::size(b), _::bits>> = <<bin, third::32>>
         {rem(h1 + h2, m), {h1, h2, m}}
 
-      i, {h1, h2, m} = acc ->
+      i, {h1, h2, m} = acc when is_integer(h1) and is_integer(h2) ->
         {rem(h1 + i * h2, m), acc}
     end
   end
@@ -327,6 +329,16 @@ defmodule Blex do
     set_all(0, k, a, {item, b, m}, hash_fn, 64, m)
   end
 
+  @spec set_all(
+          integer(),
+          integer(),
+          :atomics.atomics_ref(),
+          {any(), integer(), integer()},
+          hash_function(),
+          integer(),
+          integer()
+        ) :: :ok
+
   defp set_all(k, k, _, _, _, _, _), do: :ok
 
   defp set_all(i, k, a, acc, f, base, m) do
@@ -336,6 +348,8 @@ defmodule Blex do
     set(a, index, bits, :atomics.get(a, index))
     set_all(i + 1, k, a, new_acc, f, base + m, m)
   end
+
+  @spec set(:atomics.atomics_ref(), integer(), integer(), integer()) :: :ok
 
   defp set(a, index, bits, origin) do
     case origin ||| bits do
@@ -386,6 +400,16 @@ defmodule Blex do
     check_member_for_binary(0, k, bin, {item, b, m}, f, max, m)
   end
 
+  @spec check_member(
+          integer(),
+          integer(),
+          :atomics.atomics_ref(),
+          {any(), integer(), integer()},
+          hash_function(),
+          integer(),
+          integer()
+        ) :: boolean()
+
   defp check_member(k, k, _, _, _, _, _), do: true
 
   defp check_member(i, k, a, acc, f, base, m) do
@@ -401,6 +425,16 @@ defmodule Blex do
         false
     end
   end
+
+  @spec check_member_for_binary(
+          integer(),
+          integer(),
+          binary(),
+          {any(), integer(), integer()},
+          hash_function(),
+          integer(),
+          integer()
+        ) :: boolean()
 
   defp check_member_for_binary(k, k, _, _, _, _, _), do: true
 
@@ -471,6 +505,8 @@ defmodule Blex do
     round(-m * :math.log(1 / m))
   end
 
+  @spec count_bits_for_bin(binary(), integer()) :: integer()
+
   defp count_bits_for_bin(<<x::bits-size(64), rest::bits>>, acc) do
     count_bits_for_bin(rest, acc + count_64_bits(x))
   end
@@ -509,6 +545,8 @@ defmodule Blex do
 
   """
 
+  @spec estimate_memory(t() | binary()) :: non_neg_integer()
+
   def estimate_memory(%__MODULE__{a: a} = _blex) do
     :atomics.info(a).memory
   end
@@ -537,6 +575,8 @@ defmodule Blex do
       1419
 
   """
+
+  @spec estimate_capacity(t() | binary()) :: non_neg_integer()
 
   def estimate_capacity(%__MODULE__{m: m}) do
     compute_estimated_capacity(m)
@@ -606,6 +646,8 @@ defmodule Blex do
     blex
   end
 
+  @spec copy_data(binary(), :atomics.atomics_ref(), integer()) :: :ok
+
   defp copy_data(<<x::integer-unsigned-64, rest::bits>>, a, i) do
     :atomics.put(a, i, x)
     copy_data(rest, a, i - 1)
@@ -647,9 +689,9 @@ defmodule Blex do
     {hash_id, k, b, f_first} = transform(first)
 
     f_rest =
-      Enum.reduce(rest, [], fn it, acc ->
+      Enum.map(rest, fn it ->
         {^hash_id, ^k, ^b, f} = transform(it)
-        [f | acc]
+        f
       end)
 
     dest = create_instance(hash_id, k, b)
@@ -727,9 +769,9 @@ defmodule Blex do
     {hash_id, k, b, f_first} = transform(first)
 
     f_rest =
-      Enum.reduce(rest, [], fn it, acc ->
+      Enum.map(rest, fn it ->
         {^hash_id, ^k, ^b, f} = transform(it)
-        [f | acc]
+        f
       end)
 
     size = div((1 <<< b) * k, 64)

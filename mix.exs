@@ -30,6 +30,7 @@ defmodule Blex.MixProject do
       {:murmur, "~> 1.0", only: [:dev, :test]},
       {:stream_data, "~> 0.4", only: [:dev, :test]},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
+      {:ex_type, "~> 0.4.0", only: :dev, runtime: true},
       {:dialyxir, "~> 1.0.0-rc.4", only: :dev, runtime: false}
     ]
   end
