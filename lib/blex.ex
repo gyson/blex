@@ -711,6 +711,56 @@ defmodule Blex do
     dest
   end
 
+  @doc """
+
+  Merge multiple Blex struct or Blex binary into given Blex struct.
+
+  ## Example
+
+      iex> b1 = Blex.new(1000, 0.01)
+      iex> b2 = Blex.new(1000, 0.01)
+      iex> b3 = Blex.new(1000, 0.01)
+      iex> Blex.put(b1, "hello")
+      :ok
+      iex> Blex.put(b2, "world")
+      :ok
+      iex> Blex.put(b3, "okk")
+      :ok
+      iex> encoded_b3 = Blex.encode(b3)
+      iex> Blex.merge_into([b2, encoded_b3], b1)
+      :ok
+      iex> Blex.member?(b1, "hello")
+      true
+      iex> Blex.member?(b1, "world")
+      true
+      iex> Blex.member?(b1, "okk")
+      true
+      iex> Blex.member?(b1, "others")
+      false
+
+  """
+
+  @spec merge_into([t() | binary()], t()) :: :ok
+
+  def merge_into(blexes, %__MODULE__{a: a, k: k, b: b, m: m, hash_id: hash_id} = _blex_struct) do
+    f_blexes =
+      Enum.reduce(blexes, [], fn it, acc ->
+        {^hash_id, ^k, ^b, f} = transform(it)
+        [f | acc]
+      end)
+
+    size = div(m * k, 64)
+
+    Enum.each(1..size, fn i ->
+      bits =
+        Enum.reduce(f_blexes, 0, fn f, acc ->
+          f.(i) ||| acc
+        end)
+
+      set(a, i, bits, :atomics.get(a, i))
+    end)
+  end
+
   defp transform(%__MODULE__{a: a, k: k, b: b, hash_id: hash_id}) do
     f = fn i ->
       :atomics.get(a, i)

@@ -66,6 +66,25 @@ defmodule BlexTest do
     assert Blex.member?(b3, "okkkk") == false
   end
 
+  test "merge_into" do
+    b1 = Blex.new(1000, 0.05)
+    b2 = Blex.new(1000, 0.05)
+    b3 = Blex.new(1000, 0.05)
+
+    Blex.put(b1, "hello")
+    Blex.put(b2, "world")
+    Blex.put(b3, "third")
+
+    b3_encoded = Blex.encode(b3)
+    Blex.merge_into([b2, b3_encoded], b1)
+
+    assert Blex.member?(b1, "hello") == true
+    assert Blex.member?(b1, "world") == true
+    assert Blex.member?(b1, "third") == true
+    assert Blex.member?(b1, "abcde") == false
+    assert Blex.member?(b1, "okkkk") == false
+  end
+
   test "merge_encode" do
     b1 = Blex.new(1000, 0.05)
     b2 = Blex.new(1000, 0.05)
@@ -142,13 +161,14 @@ defmodule BlexTest do
       Blex.put(b, i)
     end
 
-    result = Enum.reduce(1_000_001..10_000_000, 0, fn i, acc ->
-      if Blex.member?(b, i) do
-        acc + 1
-      else
-        acc
-      end
-    end)
+    result =
+      Enum.reduce(1_000_001..10_000_000, 0, fn i, acc ->
+        if Blex.member?(b, i) do
+          acc + 1
+        else
+          acc
+        end
+      end)
 
     assert result < 9_000_000 * 0.01
   end
