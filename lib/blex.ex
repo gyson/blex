@@ -739,6 +739,7 @@ defmodule Blex do
       false
 
   """
+  @doc since: "0.2.0"
 
   @spec merge_into([t() | binary()], t()) :: :ok
 

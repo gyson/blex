@@ -34,7 +34,7 @@ It can be installed by adding `blex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:blex, "~> 0.1"}
+    {:blex, "~> 0.2"}
   ]
 end
 ```
