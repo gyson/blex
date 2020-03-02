@@ -5,7 +5,8 @@ defmodule Blex.MixProject do
     [
       app: :blex,
       version: "0.1.0",
-      description: "A fast Bloom filter with concurrent accessibility, powered by :atomics module",
+      description:
+        "A fast Bloom filter with concurrent accessibility, powered by :atomics module",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       package: package(),
