@@ -85,6 +85,30 @@ defmodule BlexTest do
     assert Blex.member?(b1, "okkkk") == false
   end
 
+  test "merge should be comptaible with merge_into" do
+    b1 = Blex.new(1000, 0.05)
+    b2 = Blex.new(1000, 0.05)
+    b3 = Blex.new(1000, 0.05)
+    b4 = Blex.new(1000, 0.05)
+
+    Blex.put(b1, "cool")
+    Blex.put(b2, "cool")
+    Blex.put(b3, "okkk")
+    Blex.put(b4, "nooo")
+
+    b4_encoded = Blex.encode(b4)
+
+    merge_encoded =
+      Blex.merge([b1, b3, b4_encoded])
+      |> Blex.encode()
+
+    Blex.merge_into([b3, b4_encoded], b2)
+
+    merge_into_encoded = Blex.encode(b2)
+
+    assert merge_encoded == merge_into_encoded
+  end
+
   test "merge_encode" do
     b1 = Blex.new(1000, 0.05)
     b2 = Blex.new(1000, 0.05)
