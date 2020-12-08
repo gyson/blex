@@ -4,7 +4,7 @@ defmodule Blex.MixProject do
   def project do
     [
       app: :blex,
-      version: "0.2.0",
+      version: "0.2.1",
       description:
         "A fast Bloom filter with concurrent accessibility, powered by :atomics module",
       elixir: "~> 1.8",
