@@ -206,7 +206,7 @@ defmodule Blex do
 
       1, {item, b, m, bin} ->
         third = :erlang.phash2({item}, @range)
-        <<h1::size(b), h2::size(b), _::bits>> = <<bin, third::32>>
+        <<h1::size(b), h2::size(b), _::bits>> = <<bin::bitstring, third::32>>
         {rem(h1 + h2, m), {h1, h2, m}}
 
       i, {h1, h2, m} = acc when is_integer(h1) and is_integer(h2) ->

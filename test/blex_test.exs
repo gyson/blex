@@ -196,4 +196,20 @@ defmodule BlexTest do
 
     assert result < 9_000_000 * 0.01
   end
+
+  @tag timeout: 3_000_000
+  test "very large bloom filter" do
+    # this takes about 6 GB memory, note that github actions host currently has 7 GB memory limit.
+    b = Blex.new(3_200_000_000, 0.02)
+
+    Blex.put(b, "hello")
+    Blex.put(b, "world")
+
+    assert Blex.member?(b, "hello") == true
+    assert Blex.member?(b, "world") == true
+    assert Blex.member?(b, "no exist") == false
+
+    # this test takes a few minutes
+    assert Blex.estimate_size(b) == 2
+  end
 end
